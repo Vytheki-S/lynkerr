@@ -1,58 +1,66 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getListings } from '../api/listingsApi'
 import ListingCard from '../components/ListingCard'
 
-function SkeletonCard() {
-  return (
-    <div className="bg-[#1C1C1C] animate-pulse rounded-2xl h-72" />
-  )
-}
-
 export default function HomePage() {
   const { isAuthenticated } = useAuth()
-  const [listings, setListings]       = useState([])
-  const [loading, setLoading]         = useState(true)
-  const [error, setError]             = useState('')
-  const [search, setSearch]           = useState('')
-  const [searchInput, setSearchInput] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalCount, setTotalCount]   = useState(0)
-  const [nextPage, setNextPage]       = useState(null)
-  const [prevPage, setPrevPage]       = useState(null)
 
+  const [listings,    setListings]    = useState([])
+  const [loading,     setLoading]     = useState(true)
+  const [error,       setError]       = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [search,      setSearch]      = useState('')
+  const [page,        setPage]        = useState(1)
+  const [nextUrl,     setNextUrl]     = useState(null)
+  const [prevUrl,     setPrevUrl]     = useState(null)
+  const [totalCount,  setTotalCount]  = useState(0)
+
+  // Debounce: 400ms after user stops typing → update search + reset page
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput)
+      setPage(1)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  // Fetch whenever search or page changes
   useEffect(() => {
     fetchListings()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, search])
+  }, [search, page])
 
-  async function fetchListings() {
+  const fetchListings = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const res = await getListings({ page: currentPage, search })
+      const res = await getListings({ page, search })
       setListings(res.data.results)
+      setNextUrl(res.data.next)
+      setPrevUrl(res.data.previous)
       setTotalCount(res.data.count)
-      setNextPage(res.data.next)
-      setPrevPage(res.data.previous)
     } catch {
       setError('Failed to load listings. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, search])
 
-  function handleSearch() {
-    setSearch(searchInput)
-    setCurrentPage(1)
+  function clearSearch() {
+    setSearchInput('')
+    setSearch('')
+    setPage(1)
   }
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
 
-      {/* Hero */}
-      <section className="bg-[#111111] border-b border-[#1F2937] py-16 px-6">
+      {/* ── HERO ── */}
+      <div className="bg-[#111111] border-b border-[#1F2937] py-16 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
             Discover <span className="text-[#F97316]">Unique</span> Travel Experiences
@@ -60,58 +68,85 @@ export default function HomePage() {
           <p className="text-[#6B7280] text-lg mb-8">
             Find extraordinary local experiences from guides around the world
           </p>
-          <div className="flex gap-3 max-w-xl mx-auto">
-            <input
-              type="text"
-              placeholder="Search by title or location..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="bg-[#1C1C1C] border border-[#1F2937] focus:border-[#F97316] focus:outline-none text-white rounded-xl px-5 py-4 flex-1 placeholder-[#6B7280]"
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-[#F97316] hover:bg-[#EA580C] text-white px-6 py-4 rounded-xl font-semibold transition"
-            >
-              Search
-            </button>
+
+          {/* Search bar */}
+          <div className="max-w-xl mx-auto">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search experiences, locations..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="bg-[#1C1C1C] border border-[#1F2937] focus:border-[#F97316] focus:outline-none text-white rounded-xl px-5 py-4 w-full placeholder-[#6B7280] transition-colors text-base"
+              />
+              {searchInput && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white transition text-lg"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Result count */}
+            {search && (
+              <p className="text-[#6B7280] text-sm mt-3 text-center">
+                {loading
+                  ? 'Searching...'
+                  : `Showing ${totalCount} result${totalCount !== 1 ? 's' : ''} for "${search}"`
+                }
+              </p>
+            )}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Feed */}
+      {/* ── FEED ── */}
       <div className="max-w-7xl mx-auto px-6 py-10">
 
-        {/* Header row */}
+        {/* Feed header row */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-white font-bold text-xl">
-            All Experiences
+            {search ? `Results for "${search}"` : 'All Experiences'}
             <span className="text-[#6B7280] font-normal text-base ml-2">({totalCount} listed)</span>
           </h2>
           {search && (
             <button
-              onClick={() => { setSearch(''); setSearchInput(''); setCurrentPage(1) }}
-              className="text-[#F97316] text-sm hover:text-[#EA580C] cursor-pointer"
+              onClick={clearSearch}
+              className="text-[#F97316] text-sm hover:text-[#EA580C] transition"
             >
               Clear search ✕
             </button>
           )}
         </div>
 
-        {/* Loading */}
+        {/* Loading skeletons */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-[#1C1C1C] animate-pulse rounded-2xl">
+                <div className="h-48 bg-[#252525] rounded-t-2xl" />
+                <div className="p-5 space-y-3">
+                  <div className="h-5 bg-[#252525] rounded w-3/4" />
+                  <div className="h-4 bg-[#252525] rounded w-1/2" />
+                  <div className="h-4 bg-[#252525] rounded w-full" />
+                  <div className="h-4 bg-[#252525] rounded w-2/3" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Error */}
+        {/* Error state */}
         {error && !loading && (
           <div className="text-center py-20">
-            <p className="text-[#EF4444] mb-4">{error}</p>
+            <p className="text-5xl mb-4">⚠️</p>
+            <p className="text-[#EF4444] text-lg mb-2">{error}</p>
+            <p className="text-[#6B7280] text-sm mb-6">Check your connection and try again</p>
             <button
               onClick={fetchListings}
-              className="bg-[#F97316] text-white px-6 py-3 rounded-lg"
+              className="bg-[#F97316] hover:bg-[#EA580C] text-white px-8 py-3 rounded-xl font-semibold transition"
             >
               Try Again
             </button>
@@ -121,20 +156,33 @@ export default function HomePage() {
         {/* Empty state */}
         {!loading && !error && listings.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-6xl mb-4">🌍</p>
-            <h3 className="text-white font-bold text-xl mb-2">No experiences yet</h3>
-            <p className="text-[#6B7280] mb-6">Be the first to share a travel experience!</p>
-            {isAuthenticated ? (
+            <p className="text-6xl mb-4">{search ? '🔍' : '🌍'}</p>
+            <h3 className="text-white font-bold text-xl mb-2">
+              {search ? `No results for "${search}"` : 'No experiences yet'}
+            </h3>
+            <p className="text-[#6B7280] mb-8">
+              {search
+                ? 'Try a different search term or location'
+                : 'Be the first to share a travel experience!'}
+            </p>
+            {search ? (
+              <button
+                onClick={clearSearch}
+                className="border border-[#1F2937] hover:border-[#F97316] text-[#D1D5DB] px-6 py-3 rounded-xl transition mr-3"
+              >
+                Clear Search
+              </button>
+            ) : isAuthenticated ? (
               <Link
                 to="/listings/create"
-                className="bg-[#F97316] hover:bg-[#EA580C] text-white px-6 py-3 rounded-lg font-semibold"
+                className="bg-[#F97316] hover:bg-[#EA580C] text-white px-8 py-3 rounded-xl font-semibold transition"
               >
                 + Post First Experience
               </Link>
             ) : (
               <Link
                 to="/register"
-                className="bg-[#F97316] hover:bg-[#EA580C] text-white px-6 py-3 rounded-lg font-semibold"
+                className="bg-[#F97316] hover:bg-[#EA580C] text-white px-8 py-3 rounded-xl font-semibold transition"
               >
                 Get Started Free
               </Link>
@@ -142,7 +190,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Grid */}
+        {/* Listings grid */}
         {!loading && listings.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {listings.map((listing) => (
@@ -153,30 +201,44 @@ export default function HomePage() {
 
         {/* Pagination */}
         {totalCount > 9 && (
-          <div className="flex justify-center items-center gap-4 mt-12">
+          <div className="flex items-center justify-center gap-4 mt-12">
             <button
-              disabled={!prevPage}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className={!prevPage
-                ? 'opacity-40 cursor-not-allowed border border-[#1F2937] text-[#6B7280] px-6 py-3 rounded-xl text-sm'
-                : 'border border-[#1F2937] hover:border-[#F97316] text-[#D1D5DB] px-6 py-3 rounded-xl text-sm transition'}
+              onClick={() => setPage((p) => p - 1)}
+              disabled={prevUrl === null}
+              className={
+                prevUrl === null
+                  ? 'px-6 py-3 rounded-xl border text-sm font-medium border-[#1F2937] text-[#6B7280] opacity-40 cursor-not-allowed'
+                  : 'px-6 py-3 rounded-xl border text-sm font-medium border-[#1F2937] text-[#D1D5DB] hover:border-[#F97316] hover:text-[#F97316] transition'
+              }
             >
               ← Previous
             </button>
-            <span className="bg-[#F97316] text-white px-6 py-3 rounded-xl text-sm font-medium">
-              Page {currentPage}
-            </span>
+
+            <div className="flex items-center gap-2">
+              <span className="bg-[#F97316] text-white text-sm font-bold px-5 py-3 rounded-xl">
+                Page {page}
+              </span>
+              {totalCount > 0 && (
+                <span className="text-[#6B7280] text-sm">
+                  of {Math.ceil(totalCount / 9)}
+                </span>
+              )}
+            </div>
+
             <button
-              disabled={!nextPage}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className={!nextPage
-                ? 'opacity-40 cursor-not-allowed border border-[#1F2937] text-[#6B7280] px-6 py-3 rounded-xl text-sm'
-                : 'border border-[#1F2937] hover:border-[#F97316] text-[#D1D5DB] px-6 py-3 rounded-xl text-sm transition'}
+              onClick={() => setPage((p) => p + 1)}
+              disabled={nextUrl === null}
+              className={
+                nextUrl === null
+                  ? 'px-6 py-3 rounded-xl border text-sm font-medium border-[#1F2937] text-[#6B7280] opacity-40 cursor-not-allowed'
+                  : 'px-6 py-3 rounded-xl border text-sm font-medium border-[#1F2937] text-[#D1D5DB] hover:border-[#F97316] hover:text-[#F97316] transition'
+              }
             >
               Next →
             </button>
           </div>
         )}
+
       </div>
     </div>
   )
