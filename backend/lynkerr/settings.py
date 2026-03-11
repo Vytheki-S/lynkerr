@@ -127,7 +127,7 @@ else:
         'https://lynkerr.vercel.app',
     ]
     _env_origins = [
-        o.strip() for o in os.getenv(
+        o.strip().rstrip('/') for o in os.getenv(
             'CORS_ALLOWED_ORIGINS',
             os.getenv('FRONTEND_URL', 'http://localhost:5173')
         ).split(',') if o.strip()
