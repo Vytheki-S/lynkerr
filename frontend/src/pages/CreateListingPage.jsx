@@ -32,7 +32,7 @@ export default function CreateListingPage() {
     <div className="min-h-screen bg-[#0A0A0A]">
       <div className="max-w-2xl mx-auto px-6 py-10">
 
-        <Link to="/" className="text-[#F97316] hover:text-[#EA580C] text-sm transition mb-8 inline-block">
+        <Link to="/" className="text-[#6B7280] hover:text-[#F97316] text-sm transition mb-8 inline-block">
           ← Back to feed
         </Link>
 
@@ -44,10 +44,16 @@ export default function CreateListingPage() {
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-[#EF4444] rounded-xl px-5 py-4 mb-6 text-sm">
-            {error}
+          <div className="bg-red-500/10 border border-red-500/30 text-[#EF4444] rounded-xl px-5 py-4 mb-6 text-sm flex items-center gap-3">
+            <span>⚠️</span>
+            <span>{error}</span>
           </div>
         )}
+
+        <div className="bg-[#1C1C1C] border border-[#1F2937] rounded-xl px-5 py-3 mb-6 flex items-start gap-2 text-sm">
+          <span>💡</span>
+          <span className="text-[#9CA3AF]">Tip: Use a high quality image URL for maximum engagement</span>
+        </div>
 
         <div className="bg-[#111111] border border-[#1F2937] rounded-2xl p-8">
           <ListingForm

@@ -4,6 +4,24 @@ import { useAuth } from '../context/AuthContext'
 import { getListings } from '../api/listingsApi'
 import ListingCard from '../components/ListingCard'
 
+function SkeletonCard() {
+  return (
+    <div className="bg-[#111111] border border-[#1F2937] animate-pulse rounded-2xl overflow-hidden">
+      <div className="h-48 bg-[#1C1C1C]" />
+      <div className="p-5 space-y-3">
+        <div className="h-5 bg-[#1C1C1C] rounded w-3/4" />
+        <div className="h-4 bg-[#1C1C1C] rounded w-1/2" />
+        <div className="h-4 bg-[#1C1C1C] rounded w-full" />
+        <div className="h-4 bg-[#1C1C1C] rounded w-2/3" />
+        <div className="flex items-center justify-between mt-2 pt-3 border-t border-[#1F2937]">
+          <div className="h-4 bg-[#1C1C1C] rounded w-1/4" />
+          <div className="h-4 bg-[#1C1C1C] rounded w-1/4" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const { isAuthenticated } = useAuth()
 
@@ -62,11 +80,18 @@ export default function HomePage() {
       {/* ── HERO ── */}
       <div className="bg-[#111111] border-b border-[#1F2937] py-16 px-6">
         <div className="max-w-3xl mx-auto text-center">
+
+          {/* Badge pill */}
+          <div className="inline-flex items-center gap-2 bg-[#1C1C1C] border border-[#1F2937] rounded-full px-4 py-1.5 text-sm text-[#9CA3AF] mb-6">
+            <span>🌍</span>
+            <span>Travel Experience Platform</span>
+          </div>
+
           <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
-            Discover <span className="text-[#F97316]">Unique</span> Travel Experiences
+            Discover <span className="text-[#F97316]">Travel Experiences</span>
           </h1>
           <p className="text-[#6B7280] text-lg mb-8">
-            Find extraordinary local experiences from guides around the world
+            Connect with local guides and experience operators from around the world
           </p>
 
           {/* Search bar */}
@@ -77,19 +102,23 @@ export default function HomePage() {
                 placeholder="Search experiences, locations..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="bg-[#1C1C1C] border border-[#1F2937] focus:border-[#F97316] focus:outline-none text-white rounded-xl px-5 py-4 w-full placeholder-[#6B7280] transition-colors text-base"
+                className="bg-[#1C1C1C] border border-[#1F2937] focus:border-[#F97316] focus:outline-none text-white rounded-xl px-5 py-4 pr-12 w-full placeholder-[#6B7280] text-base"
               />
-              {searchInput && (
+              {searchInput ? (
                 <button
                   onClick={clearSearch}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white transition text-lg"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white text-lg"
                 >
                   ✕
                 </button>
+              ) : (
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] text-lg pointer-events-none">
+                  🔍
+                </span>
               )}
             </div>
 
-            {/* Result count */}
+            {/* Result count when searching */}
             {search && (
               <p className="text-[#6B7280] text-sm mt-3 text-center">
                 {loading
@@ -97,6 +126,19 @@ export default function HomePage() {
                   : `Showing ${totalCount} result${totalCount !== 1 ? 's' : ''} for "${search}"`
                 }
               </p>
+            )}
+
+            {/* Stats row when not searching */}
+            {!search && (
+              <div className="flex items-center justify-center gap-6 mt-6 text-sm text-[#6B7280]">
+                <span className="flex items-center gap-1">
+                  <span className="text-[#F97316] font-bold">{totalCount}+</span> Experiences
+                </span>
+                <span className="w-px h-4 bg-[#1F2937]" />
+                <span>🌍 Worldwide</span>
+                <span className="w-px h-4 bg-[#1F2937]" />
+                <span>Free To Browse</span>
+              </div>
             )}
           </div>
         </div>
@@ -124,17 +166,7 @@ export default function HomePage() {
         {/* Loading skeletons */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-[#1C1C1C] animate-pulse rounded-2xl">
-                <div className="h-48 bg-[#252525] rounded-t-2xl" />
-                <div className="p-5 space-y-3">
-                  <div className="h-5 bg-[#252525] rounded w-3/4" />
-                  <div className="h-4 bg-[#252525] rounded w-1/2" />
-                  <div className="h-4 bg-[#252525] rounded w-full" />
-                  <div className="h-4 bg-[#252525] rounded w-2/3" />
-                </div>
-              </div>
-            ))}
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
         )}
 

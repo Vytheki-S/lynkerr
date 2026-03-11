@@ -38,8 +38,8 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-[#111111] border border-[#1F2937] rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-1">Create Account</h2>
-          <p className="text-[#9CA3AF] text-sm mb-6">Join thousands of experience providers</p>
+          <h2 className="text-2xl font-bold text-white mb-1">Join Lynkerr 🌍</h2>
+          <p className="text-[#9CA3AF] text-sm mb-6">Share your experiences with travelers worldwide</p>
 
           {errors.non_field_errors && (
             <div className="bg-red-500/10 border border-red-500/30 text-[#EF4444] rounded-lg px-4 py-3 mb-4 text-sm">

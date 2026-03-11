@@ -37,7 +37,7 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-[#111111] border border-[#1F2937] rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Welcome Back</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Welcome Back 👋</h2>
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-[#EF4444] rounded-lg px-4 py-3 mb-4 text-sm">

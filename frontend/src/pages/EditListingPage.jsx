@@ -64,7 +64,7 @@ export default function EditListingPage() {
 
         <Link
           to={`/listings/${id}`}
-          className="text-[#F97316] hover:text-[#EA580C] text-sm transition mb-8 inline-block"
+          className="text-[#6B7280] hover:text-[#F97316] text-sm transition mb-8 inline-block"
         >
           ← Back to listing
         </Link>
@@ -77,13 +77,14 @@ export default function EditListingPage() {
         </div>
 
         <div className="bg-[#1C1C1C] border border-[#1F2937] rounded-xl px-5 py-4 mb-6">
-          <p className="text-[#6B7280] text-xs mb-1">Editing:</p>
+          <p className="text-[#6B7280] text-xs uppercase tracking-wider mb-1">Currently Editing:</p>
           <p className="text-white font-semibold">{listing.title}</p>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-[#EF4444] rounded-xl px-5 py-4 mb-6 text-sm">
-            {error}
+          <div className="bg-red-500/10 border border-red-500/30 text-[#EF4444] rounded-xl px-5 py-4 mb-6 text-sm flex items-center gap-3">
+            <span>⚠️</span>
+            <span>{error}</span>
           </div>
         )}
 
