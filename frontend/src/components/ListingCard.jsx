@@ -1,26 +1,41 @@
-// TODO: implement full listing card with orange-black branding
 import { Link } from 'react-router-dom'
-import timeAgo from '../utils/timeAgo'
+import { timeAgo } from '../utils/timeAgo'
 
 export default function ListingCard({ listing }) {
+  const { id, title, location, image_url, description, price, owner_username, created_at } = listing
+
   return (
-    <Link to={`/listings/${listing.id}`}>
-      <div className="bg-gray-900 border border-gray-800 rounded-xl hover:border-orange-500 transition overflow-hidden group cursor-pointer">
-        <div className="relative h-52 overflow-hidden">
-          <img src={listing.image_url} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-          {listing.price && (
-            <span className="absolute top-3 right-3 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-              ${listing.price}
-            </span>
-          )}
+    <Link to={`/listings/${id}`}>
+      <div className="bg-[#111111] border border-[#1F2937] hover:border-[#F97316] rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer group">
+        <div className="overflow-hidden h-48">
+          <img
+            src={image_url}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => { e.target.src = 'https://placehold.co/400x300/111111/F97316?text=No+Image' }}
+          />
         </div>
         <div className="p-5">
-          <h3 className="text-white font-bold text-lg group-hover:text-orange-400 transition">{listing.title}</h3>
-          <p className="text-orange-400 text-sm mt-1">📍 {listing.location}</p>
-          <p className="text-gray-400 text-sm mt-2 line-clamp-2">{listing.description}</p>
-          <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-800">
-            <span className="text-gray-500 text-xs">By <span className="text-gray-300">{listing.creator_name}</span></span>
-            <span className="text-gray-600 text-xs">{timeAgo(listing.created_at)}</span>
+          <h3 className="text-white font-semibold text-lg leading-tight mb-2 line-clamp-1">{title}</h3>
+          <p className="flex items-center gap-1 mb-3">
+            <span className="text-[#F97316]">📍</span>
+            <span className="text-[#F97316] text-sm">{location}</span>
+          </p>
+          <p className="text-[#6B7280] text-sm line-clamp-2 mb-4">{description}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[#D1D5DB] text-xs">by {owner_username}</p>
+              <p className="text-[#6B7280] text-xs">Posted {timeAgo(created_at)}</p>
+            </div>
+            {price ? (
+              <span className="bg-[#F97316] text-white text-xs font-semibold px-3 py-1 rounded-full">
+                ${price}
+              </span>
+            ) : (
+              <span className="bg-[#1C1C1C] text-[#6B7280] text-xs px-3 py-1 rounded-full border border-[#1F2937]">
+                Free
+              </span>
+            )}
           </div>
         </div>
       </div>
