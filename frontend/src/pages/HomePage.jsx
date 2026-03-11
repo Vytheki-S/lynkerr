@@ -30,10 +30,23 @@ export default function HomePage() {
   const [error,       setError]       = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [search,      setSearch]      = useState('')
+  const [category,    setCategory]    = useState('all')
   const [page,        setPage]        = useState(1)
   const [nextUrl,     setNextUrl]     = useState(null)
   const [prevUrl,     setPrevUrl]     = useState(null)
   const [totalCount,  setTotalCount]  = useState(0)
+
+  const CATEGORIES = [
+    { value: 'all',       label: 'All' },
+    { value: 'adventure', label: 'Adventure' },
+    { value: 'culture',   label: 'Culture' },
+    { value: 'food',      label: 'Food' },
+    { value: 'nature',    label: 'Nature' },
+    { value: 'hiking',    label: 'Hiking' },
+    { value: 'night',     label: 'Night' },
+    { value: 'water',     label: 'Water' },
+    { value: 'history',   label: 'History' },
+  ]
 
   // Debounce: 400ms after user stops typing → update search + reset page
   useEffect(() => {
@@ -44,18 +57,18 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [searchInput])
 
-  // Fetch whenever search or page changes
+  // Fetch whenever search, category or page changes
   useEffect(() => {
     fetchListings()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, page])
+  }, [search, category, page])
 
   const fetchListings = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const res = await getListings({ page, search })
+      const res = await getListings({ page, search, category: category !== 'all' ? category : undefined })
       setListings(res.data.results)
       setNextUrl(res.data.next)
       setPrevUrl(res.data.previous)
@@ -66,11 +79,16 @@ export default function HomePage() {
       setLoading(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search])
+  }, [page, search, category])
 
   function clearSearch() {
     setSearchInput('')
     setSearch('')
+    setPage(1)
+  }
+
+  function handleCategoryChange(val) {
+    setCategory(val)
     setPage(1)
   }
 
@@ -96,26 +114,31 @@ export default function HomePage() {
 
           {/* Search bar */}
           <div className="max-w-xl mx-auto">
-            <div className="relative">
+            <div className="relative flex gap-2">
               <input
                 type="text"
                 placeholder="Search experiences, locations..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="bg-[#1C1C1C] border border-[#1F2937] focus:border-[#F97316] focus:outline-none text-white rounded-xl px-5 py-4 pr-12 w-full placeholder-[#6B7280] text-base"
+                onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
+                className="bg-[#1C1C1C] border border-[#1F2937] focus:border-[#F97316] focus:outline-none text-white rounded-xl px-5 py-4 w-full placeholder-[#6B7280] text-base"
               />
-              {searchInput ? (
+              {searchInput && (
                 <button
                   onClick={clearSearch}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white text-lg"
+                  className="absolute right-[60px] top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-white text-lg px-2"
                 >
                   ✕
                 </button>
-              ) : (
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] text-lg pointer-events-none">
-                  🔍
-                </span>
               )}
+              <button
+                onClick={() => setSearch(searchInput)}
+                className="bg-[#F97316] hover:bg-[#EA580C] text-white px-5 rounded-xl transition flex-shrink-0 flex items-center justify-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                </svg>
+              </button>
             </div>
 
             {/* Result count when searching */}
@@ -144,21 +167,44 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* ── CATEGORY FILTER PILLS ── */}
+      <div className="border-b border-[#1F2937] bg-[#0A0A0A] sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => handleCategoryChange(cat.value)}
+              className={`flex-shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                category === cat.value
+                  ? 'bg-[#F97316] text-white'
+                  : 'bg-[#111111] border border-[#1F2937] text-[#9CA3AF] hover:border-[#F97316] hover:text-white'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── FEED ── */}
       <div className="max-w-7xl mx-auto px-6 py-10">
 
         {/* Feed header row */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-white font-bold text-xl">
-            {search ? `Results for "${search}"` : 'All Experiences'}
+            {search
+              ? `Results for "${search}"`
+              : category !== 'all'
+                ? `${CATEGORIES.find(c => c.value === category)?.label} Experiences`
+                : 'All Experiences'}
             <span className="text-[#6B7280] font-normal text-base ml-2">({totalCount} listed)</span>
           </h2>
-          {search && (
+          {(search || category !== 'all') && (
             <button
-              onClick={clearSearch}
+              onClick={() => { clearSearch(); handleCategoryChange('all') }}
               className="text-[#F97316] text-sm hover:text-[#EA580C] transition"
             >
-              Clear search ✕
+              Clear filters ✕
             </button>
           )}
         </div>

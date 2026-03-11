@@ -19,12 +19,15 @@ export default function Navbar() {
 
   const authLinks = isAuthenticated ? (
     <>
-      <div className="flex items-center gap-2">
+      <Link
+        to={`/profile/${user?.username}`}
+        className="flex items-center gap-2 hover:opacity-80 transition"
+      >
         <div className="w-8 h-8 rounded-full bg-[#F97316] flex items-center justify-center text-white text-sm font-bold select-none">
           {avatarLetter}
         </div>
-        <span className="text-[#9CA3AF] text-sm">{user?.username}</span>
-      </div>
+        <span className="text-[#9CA3AF] text-sm hover:text-[#F97316] transition">{user?.username}</span>
+      </Link>
       <Link
         to="/listings/create"
         className="bg-[#F97316] hover:bg-[#EA580C] text-white px-4 py-2 rounded-lg text-sm font-medium"
@@ -80,15 +83,19 @@ export default function Navbar() {
         <div className="md:hidden bg-[#111111] border-t border-[#1F2937] px-6 py-4 flex flex-col gap-3">
           {isAuthenticated ? (
             <>
-              <div className="flex items-center gap-3 pb-3 border-b border-[#1F2937]">
+              <Link
+                to={`/profile/${user?.username}`}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 pb-3 border-b border-[#1F2937] hover:opacity-80 transition"
+              >
                 <div className="w-10 h-10 rounded-full bg-[#F97316] flex items-center justify-center text-white font-bold select-none">
                   {avatarLetter}
                 </div>
                 <div>
                   <p className="text-white text-sm font-semibold">{user?.username}</p>
-                  <p className="text-[#6B7280] text-xs">Signed in</p>
+                  <p className="text-[#6B7280] text-xs">View Profile →</p>
                 </div>
-              </div>
+              </Link>
               <Link
                 to="/listings/create"
                 onClick={() => setMobileOpen(false)}

@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getListing, deleteListing } from '../api/listingsApi'
+import { getListing, deleteListing, toggleLike } from '../api/listingsApi'
 import { timeAgo } from '../utils/timeAgo'
 
 export default function ListingDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
 
   const [listing,     setListing]     = useState(null)
   const [loading,     setLoading]     = useState(true)
   const [error,       setError]       = useState('')
   const [deleting,    setDeleting]    = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [liked,       setLiked]       = useState(false)
+  const [likeCount,   setLikeCount]   = useState(0)
 
   useEffect(() => {
     fetchListing()
@@ -26,6 +28,8 @@ export default function ListingDetailPage() {
     try {
       const res = await getListing(id)
       setListing(res.data)
+      setLiked(res.data.is_liked || false)
+      setLikeCount(res.data.like_count || 0)
     } catch {
       setError('Listing not found.')
     } finally {
@@ -47,6 +51,20 @@ export default function ListingDetailPage() {
   }
 
   const isOwner = user && listing && user.username === listing.owner_username
+
+  async function handleLike() {
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+    try {
+      const res = await toggleLike(id)
+      setLiked(res.data.liked)
+      setLikeCount(res.data.like_count)
+    } catch {
+      // silently ignore
+    }
+  }
 
   if (loading) {
     return (
@@ -122,13 +140,32 @@ export default function ListingDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[#6B7280] text-sm">Listed by</p>
-              <p className="text-white font-semibold">{listing.owner_username}</p>
+              <Link
+                to={`/profile/${listing.owner_username}`}
+                className="text-[#F97316] hover:text-[#EA580C] font-semibold transition"
+              >
+                {listing.owner_username}
+              </Link>
             </div>
             <div className="text-right">
               <p className="text-[#6B7280] text-sm">Posted {timeAgo(listing.created_at)}</p>
             </div>
           </div>
         </div>
+
+        {/* Like button */}
+        <button
+          onClick={handleLike}
+          className={`w-full flex items-center justify-center gap-3 border rounded-2xl py-4 font-semibold transition mb-4 ${
+            liked
+              ? 'border-[#F97316] text-[#F97316] bg-[#F97316]/10'
+              : 'border-[#1F2937] text-[#D1D5DB] hover:border-[#F97316] hover:text-[#F97316]'
+          }`}
+        >
+          <span className="text-xl">{liked ? '❤️' : '🤍'}</span>
+          <span>{liked ? 'Saved!' : 'Save Experience'}</span>
+          <span className="text-sm text-[#6B7280]">({likeCount})</span>
+        </button>
 
         {/* Owner actions */}
         {isOwner && (

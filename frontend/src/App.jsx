@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage'
 import ListingDetailPage from './pages/ListingDetailPage'
 import CreateListingPage from './pages/CreateListingPage'
 import EditListingPage from './pages/EditListingPage'
+import ProfilePage from './pages/ProfilePage'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/listings/create" element={
             <ProtectedRoute><CreateListingPage /></ProtectedRoute>
           } />
