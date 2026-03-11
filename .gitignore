@@ -1,0 +1,28 @@
+# Python virtual environment
+backend/venv/
+backend/.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Django
+backend/staticfiles/
+backend/media/
+*.sqlite3
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
