@@ -122,12 +122,17 @@ SIMPLE_JWT = {
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    CORS_ALLOWED_ORIGINS = [
+    _extra_origins = [
+        'https://lynkerr-tau.vercel.app',
+        'https://lynkerr.vercel.app',
+    ]
+    _env_origins = [
         o.strip() for o in os.getenv(
             'CORS_ALLOWED_ORIGINS',
             os.getenv('FRONTEND_URL', 'http://localhost:5173')
         ).split(',') if o.strip()
     ]
+    CORS_ALLOWED_ORIGINS = list(set(_extra_origins + _env_origins))
     # Allow any *.vercel.app and *.onrender.com subdomain
     CORS_ALLOWED_ORIGIN_REGEXES = [
         r'^https://.*\.vercel\.app$',
